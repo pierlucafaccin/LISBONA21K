@@ -363,7 +363,8 @@
     bici:    {lbl:'Bici',    c:'var(--z-rec)'},
     riposo:  {lbl:'Riposo',  c:'var(--z-rest)'},
     mobilita:{lbl:'Mobilità',c:'var(--z-rest)'},
-    vacanza: {lbl:'Vacanza', c:'var(--z-mar)'}
+    vacanza: {lbl:'Vacanza', c:'var(--z-mar)'},
+    padel:   {lbl:'Padel',   c:'#9A82D4'}
   };
 
   const P_REC = "6:20–6:55";   // recupero
@@ -391,6 +392,20 @@
     return ["3 x 15 calf raises (10 bipodalici + 5 monopodalici)", "2 x 30\" equilibrio monopodalico, occhi aperti poi chiusi", "2 x 15 eversione/inversione con elastico", "Mobilità tibio-tarsica"];
   }
 
+  function gym(which,extra){
+    const b=["Sera — Palestra "+which+" (scheda del PT), dopo la corsa, mai prima"];
+    return extra?b.concat([extra]):b;
+  }
+  function rest(){return {type:'riposo',km:0,title:"Riposo",detail:["Riposo completo."]};}
+  function padel(title,alt,km){
+    return {type:'padel',km:km,title:title,tag:"Oppure interval",detail:[
+      "Padel: è un giorno duro, non di recupero. Contalo come la seduta intensa della settimana",
+      "Scarpe da padel, non da corsa: la suola da running non tiene i movimenti laterali, e con la tua caviglia conta",
+      "Se non giochi: "+alt
+    ]};
+  }
+
+
   const WEEK_TEMPLATES = [
   // ---------- SETTIMANA 1: recupero post-gara ----------
   { phase:"Recupero post-gara", note:"Hai corso una mezza a tutta ieri. Questa settimana NON si allena: si recupera. Il muscolo è micro-danneggiato anche se non fa male, e il sistema nervoso è svuotato. Correre forte adesso ruba settimane al blocco di Verona.", days:{
@@ -403,147 +418,132 @@
       sun:{type:'facile', km:8, dur:"50'", title:"Facile 8 km", targetPace:P_E, targetHr:HR_E, detail:eDet(["Niente lungo questa settimana, niente progressioni, niente finali tirati"])}
   }},
   // ---------- SETTIMANA 2 ----------
-  { phase:"Ripresa struttura", note:"Si rientra nella routine a 6 giorni. Nota bene: i giorni facili sono a 6:00-6:40, non a 5:30 come tutta l'estate. Questo è IL cambiamento che rende sostenibile il volume che arriva.", days:{
-      mon:{type:'recupero', km:5, dur:"32'", title:"Recupero 5 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:9, dur:"~55'", title:"Soglia: 4 km @ T", tag:"Qualità", targetHr:HR_T, detail:[
-        "3 km riscaldamento @ "+P_E,
-        "4 km continui @ "+P_T+" /km (FC "+HR_T+") — sforzo 'comodamente duro', frasi brevi",
-        "2 km defaticamento @ "+P_E,
-        "Se non riesci a tenere il ritmo negli ultimi 1000 m, la prossima volta si accorcia: la soglia si corre COMPLETA, non a esaurimento"
-      ]},
-      wed:{type:'facile', km:6, dur:"38'", title:"Facile 6 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["A fine corsa: 6 x 100 m progressivi, recupero camminando 90\"","Giorno di smart working: se vuoi la bici la sera, tienila blanda"])},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo."]},
-      sat:{type:'facile', km:5, dur:"32'", title:"Facile 5 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      sun:{type:'lungo', km:13, dur:"~1h21", title:"Lungo 13 km", targetPace:P_E, targetHr:HR_E, detail:["Tutto @ "+P_E+" /km — nessun finale tirato, nessuna progressione","FC: "+HR_E+" bpm","La tentazione di chiudere forte, questa settimana, va ignorata"]}
+  { phase:"Ripresa struttura", note:"Nuova struttura: martedì padel, giovedì soglia a pranzo, palestra lunedì e giovedì sera. Questa settimana la palestra parte solo quando hai la scheda del PT, e comunque leggera.", days:{
+      mon:{type:'recupero', km:5, dur:"32'", title:"Recupero 5 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet(["Palestra A: solo quando hai la scheda del PT. La prima seduta deve essere leggera: l'indolenzimento da scheda nuova si somma al volume che sale"])},
+      tue:padel("Padel libero", "facile 6 km @ "+P_E+" /km, niente interval questa settimana", 0),
+      wed:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
+      thu:{type:'ritmo', km:9, dur:"~55'", title:"Soglia: 4 km @ T + Palestra B", tag:"Qualità", targetHr:HR_T, detail:[
+        "Pranzo — 3 km riscaldamento @ "+P_E,
+        "Pranzo — 4 km continui @ "+P_T+" /km (FC "+HR_T+") — sforzo 'comodamente duro'",
+        "Pranzo — 2 km defaticamento @ "+P_E
+      ].concat(gym("B","Se hai già la scheda. Leggera: è la prima settimana"))},
+      fri:rest(),
+      sat:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["6 x 100 m progressivi a fine corsa"])},
+      sun:{type:'lungo', km:13, dur:"~1h21", title:"Lungo 13 km", targetPace:P_E, targetHr:HR_E, detail:["Tutto @ "+P_E+" /km — nessun finale tirato","FC: "+HR_E+" bpm"]}
   }},
   // ---------- SETTIMANA 3 ----------
-  { phase:"Costruzione 1", note:"Volume in crescita e prima seduta di soglia frazionata. Da qui in poi due sedute di qualità a settimana: martedì soglia, giovedì velocità.", days:{
-      mon:{type:'recupero', km:6, dur:"39'", title:"Recupero 6 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:10, dur:"~1h", title:"Soglia: 2 x 3 km @ T", tag:"Qualità", targetHr:HR_T, detail:[
-        "3 km riscaldamento @ "+P_E,
-        "2 x 3 km @ "+P_T+" /km, recupero 3' di corsa lenta tra le due",
-        "2 km defaticamento @ "+P_E,
-        "Il secondo blocco deve essere allo stesso ritmo del primo: se rallenti, sei partito troppo forte"
-      ]},
-      wed:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'ripetute', km:9, dur:"~55'", title:"Interval: 5 x 1000 m @ I", tag:"Qualità", targetHr:HR_I, detail:[
-        "3 km riscaldamento @ "+P_E+" + 4 allunghi",
-        "5 x 1000 m @ "+P_I+" /km (circa 4:40-4:50 al km), recupero 3' di corsa lenta",
-        "2 km defaticamento",
-        "Queste sono al 95% dello sforzo massimo sostenibile: respiro pesante, parlare impossibile"
-      ]},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo — dopo due qualità serve."]},
-      sat:{type:'facile', km:6, dur:"38'", title:"Facile 6 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      sun:{type:'lungo', km:15, dur:"~1h34", title:"Lungo 15 km", targetPace:P_E, targetHr:HR_E, detail:["Primi 13 km @ "+P_E,"Ultimi 3 km @ "+P_M+" /km (ritmo maratona, FC "+HR_M+")","Questo è il primo lungo con un finale strutturato"]}
+  { phase:"Costruzione 1", note:"Volume in crescita, palestra a regime due volte a settimana. Martedì padel libero: se non giochi, al suo posto c'è l'interval.", days:{
+      mon:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + Palestra A", tag:"Forza", targetPace:P_E, targetHr:HR_E, detail:eDet(gym("A"))},
+      tue:padel("Padel libero", "5 x 1000 m @ "+P_I+" /km, recupero 3' (3 km riscaldamento, 2 defaticamento)", 0),
+      wed:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet(["Giorno dopo il padel: se le gambe sono pesanti, stai verso il fondo della fascia"])},
+      thu:{type:'ritmo', km:10, dur:"~1h", title:"Soglia: 2 x 3 km @ T + Palestra B", tag:"Qualità", targetHr:HR_T, detail:[
+        "Pranzo — 3 km riscaldamento @ "+P_E,
+        "Pranzo — 2 x 3 km @ "+P_T+" /km, recupero 3' di corsa lenta",
+        "Pranzo — 2 km defaticamento",
+        "Il secondo blocco allo stesso ritmo del primo: se rallenti, sei partito troppo forte"
+      ].concat(gym("B"))},
+      fri:rest(),
+      sat:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["6 x 100 m progressivi a fine corsa"])},
+      sun:{type:'lungo', km:15, dur:"~1h34", title:"Lungo 15 km", targetPace:P_E, targetHr:HR_E, detail:["Primi 12 km @ "+P_E,"Ultimi 3 km @ "+P_M+" /km (ritmo maratona, FC "+HR_M+")"]}
   }},
   // ---------- SETTIMANA 4 ----------
-  { phase:"Costruzione 2", note:"Settimana più carica del primo blocco. Il lungo arriva a 18 km, cioè la distanza che a settembre era il tuo picco assoluto: ora è una domenica di routine.", days:{
-      mon:{type:'recupero', km:6, dur:"39'", title:"Recupero 6 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:11, dur:"~1h05", title:"Soglia: 5 km continui @ T", tag:"Qualità", targetHr:HR_T, detail:[
-        "3 km riscaldamento @ "+P_E,
-        "5 km continui @ "+P_T+" /km (FC "+HR_T+")",
-        "3 km defaticamento @ "+P_E,
-        "5 km di fila a soglia è il pane della mezza maratona: è la seduta che più assomiglia alla gara"
-      ]},
-      wed:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'ripetute', km:10, dur:"~1h", title:"Interval: 6 x 1000 m @ I", tag:"Qualità", targetHr:HR_I, detail:[
-        "3 km riscaldamento + 4 allunghi",
-        "6 x 1000 m @ "+P_I+" /km, recupero 3' corsa lenta",
-        "2 km defaticamento",
-        "Se dalla 5ª ripetuta il ritmo cala di più di 5\"/km, chiudi lì"
-      ]},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo — la settimana è carica, serve."]},
-      sat:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["6 x 100 m progressivi a fine corsa"])},
-      sun:{type:'lungo', km:17, dur:"~1h46", title:"Lungo 17 km", tag:"Chiave", targetHr:HR_E, detail:["Primi 14 km @ "+P_E,"Ultimi 4 km @ "+P_M+" /km","Prova già qui i gel che userai a Verona"]}
+  { phase:"Costruzione 2", note:"La settimana più carica del primo blocco. Il lungo arriva a 17 km. Ultimo martedì di padel prima del test.", days:{
+      mon:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + Palestra A", tag:"Forza", targetPace:P_E, targetHr:HR_E, detail:eDet(gym("A"))},
+      tue:padel("Padel libero", "6 x 1000 m @ "+P_I+" /km, recupero 3' (3 km riscaldamento, 2 defaticamento)", 0),
+      wed:{type:'facile', km:8, dur:"50'", title:"Facile 8 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
+      thu:{type:'ritmo', km:11, dur:"~1h05", title:"Soglia: 5 km continui @ T + Palestra B", tag:"Qualità", targetHr:HR_T, detail:[
+        "Pranzo — 3 km riscaldamento @ "+P_E,
+        "Pranzo — 5 km continui @ "+P_T+" /km (FC "+HR_T+")",
+        "Pranzo — 3 km defaticamento",
+        "5 km di fila a soglia: è la seduta che più assomiglia alla mezza"
+      ].concat(gym("B"))},
+      fri:rest(),
+      sat:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["6 x 100 m progressivi a fine corsa"])},
+      sun:{type:'lungo', km:17, dur:"~1h46", title:"Lungo 17 km", targetHr:HR_E, detail:["Primi 13 km @ "+P_E,"Ultimi 4 km @ "+P_M+" /km","Prova già qui i gel che userai a Verona"]}
   }},
   // ---------- SETTIMANA 5: tune-up ----------
-  { phase:"Affilatura + tune-up 10 km", note:"Settimana più leggera per arrivare scarico alla prova del 25 ottobre. Quel 10 km è il dato più importante di tutto il blocco: da lì ricalcoliamo il VDOT e le andature delle ultime 3 settimane.", days:{
-      mon:{type:'recupero', km:6, dur:"39'", title:"Recupero 6 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ripetute', km:9, dur:"~55'", title:"Interval breve: 4 x 1000 m @ I", tag:"Qualità", targetHr:HR_I, detail:[
+  { phase:"Affilatura + tune-up 10 km", note:"Niente padel questa settimana: il martedì serve per tenere le gambe brillanti, e domenica c'è il test che decide le andature finali. Palestra leggera solo il lunedì.", days:{
+      mon:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + Palestra A leggera", tag:"Forza", targetPace:P_E, targetHr:HR_E, detail:eDet(gym("A","Leggera: metà dei carichi, niente esercizi nuovi. Domenica c'è il test"))},
+      tue:{type:'ripetute', km:9, dur:"~55'", title:"Interval: 4 x 1000 m @ I", tag:"Niente padel", targetHr:HR_I, detail:[
         "3 km riscaldamento + allunghi",
         "4 x 1000 m @ "+P_I+" /km, recupero 3'",
         "2 km defaticamento",
         "Volume ridotto: serve a tenere la brillantezza, non a stancarti"
       ]},
       wed:{type:'facile', km:6, dur:"38'", title:"Facile 6 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["5 x 100 m progressivi"])},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo."]},
-      sat:{type:'recupero', km:4, dur:"26'", title:"Sgambata 4 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet(["3 allunghi brevi a fine corsa, per svegliare le gambe in vista di domani"])},
+      thu:{type:'facile', km:6, dur:"38'", title:"Facile 6 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["5 x 100 m progressivi","Niente palestra B questa settimana"])},
+      fri:rest(),
+      sat:{type:'recupero', km:4, dur:"26'", title:"Sgambata 4 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet(["3 allunghi brevi a fine corsa"])},
       sun:{type:'test', km:15, dur:"~1h20", title:"TUNE-UP: 10 km a tutta", tag:"Test chiave", detail:[
         "3 km riscaldamento @ "+P_E+" + allunghi",
-        "10 km il più veloce che riesci a tenere COSTANTE (se trovi una gara ufficiale sui 10 km, ancora meglio)",
+        "10 km il più veloce che riesci a tenere COSTANTE (una gara ufficiale sui 10 km è ancora meglio)",
         "2 km defaticamento",
-        "Gestione: primi 2 km leggermente conservativi, poi costante, ultimi 2 km tutto quello che resta",
-        "Da questo tempo ricalcoliamo VDOT, andature e obiettivo reale per Verona",
-        "ALTERNATIVA se preferisci non correre a tutta: 16 km con 10 km @ "+RP+" /km"
+        "Primi 2 km leggermente conservativi, poi costante, ultimi 2 km quello che resta",
+        "Da questo tempo ricalcoliamo VDOT, andature e obiettivo reale per Verona"
       ]}
   }},
   // ---------- SETTIMANA 6 ----------
-  { phase:"Specifico 1", note:"Blocco finale: le sedute diventano specifiche per la mezza. Più chilometri a ritmo gara, lungo che si allunga. Andature da aggiornare col risultato del tune-up.", days:{
-      mon:{type:'recupero', km:6, dur:"39'", title:"Recupero 6 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:11, dur:"~1h05", title:"Soglia: 6 km continui @ T", tag:"Qualità", targetHr:HR_T, detail:[
-        "3 km riscaldamento @ "+P_E,
-        "6 km continui @ "+P_T+" /km (o al nuovo ritmo soglia ricalcolato dopo il tune-up)",
-        "3 km defaticamento"
-      ]},
+  { phase:"Specifico 1", note:"Blocco finale specifico per la mezza. Andature da aggiornare col risultato del tune-up. Ultimo martedì di padel libero prima della gara.", days:{
+      mon:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + Palestra A", tag:"Forza", targetPace:P_E, targetHr:HR_E, detail:eDet(gym("A"))},
+      tue:padel("Padel libero", "5 x 1200 m @ "+P_I+" /km, recupero 3' (3 km riscaldamento, 2 defaticamento)", 0),
       wed:{type:'facile', km:8, dur:"50'", title:"Facile 8 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'ripetute', km:10, dur:"~1h", title:"Interval: 5 x 1200 m @ I", tag:"Qualità", targetHr:HR_I, detail:[
-        "3 km riscaldamento + allunghi",
-        "5 x 1200 m @ "+P_I+" /km, recupero 3' corsa lenta",
-        "2 km defaticamento"
-      ]},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo."]},
+      thu:{type:'ritmo', km:11, dur:"~1h05", title:"Soglia: 6 km continui @ T + Palestra B", tag:"Qualità", targetHr:HR_T, detail:[
+        "Pranzo — 3 km riscaldamento @ "+P_E,
+        "Pranzo — 6 km continui @ "+P_T+" /km (o al nuovo ritmo soglia dopo il tune-up)",
+        "Pranzo — 2 km defaticamento"
+      ].concat(gym("B"))},
+      fri:rest(),
       sat:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
       sun:{type:'lungo', km:19, dur:"~1h59", title:"Lungo 19 km con 5 @ ritmo gara", tag:"Chiave", targetHr:HR_E, detail:[
         "Primi 14 km @ "+P_E,
         "Ultimi 5 km @ "+RP+" /km (ritmo gara Verona)",
-        "Prova gel + idratazione esattamente come in gara: è la prima prova generale"
+        "Gel e idratazione esattamente come in gara: prima prova generale"
       ]}
   }},
   // ---------- SETTIMANA 7: picco ----------
-  { phase:"Picco", note:"La settimana più impegnativa di tutto il blocco: volume massimo e lungo da 22 km. Superata questa, il lavoro è finito e si scarica verso Verona.", days:{
-      mon:{type:'recupero', km:6, dur:"39'", title:"Recupero 6 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:12, dur:"~1h10", title:"Soglia: 2 x 4 km @ T", tag:"Qualità", targetHr:HR_T, detail:[
-        "3 km riscaldamento @ "+P_E,
-        "2 x 4 km @ "+P_T+" /km, recupero 3' corsa lenta",
-        "3 km defaticamento",
-        "8 km totali a soglia: la seduta più dura del blocco"
-      ]},
-      wed:{type:'facile', km:8, dur:"50'", title:"Facile 8 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'ripetute', km:10, dur:"~1h", title:"Interval: 4 x 1600 m @ I", tag:"Qualità", targetHr:HR_I, detail:[
+  { phase:"Picco", note:"La settimana più dura del blocco: niente padel, due sedute di qualità e il lungo da 21 km. Superata questa, il lavoro è finito.", days:{
+      mon:{type:'facile', km:7, dur:"44'", title:"Facile 7 km + Palestra A", tag:"Forza", targetPace:P_E, targetHr:HR_E, detail:eDet(gym("A","Ultima seduta con carichi pieni prima della gara"))},
+      tue:{type:'ripetute', km:10, dur:"~1h", title:"Interval: 4 x 1600 m @ I", tag:"Niente padel", targetHr:HR_I, detail:[
         "3 km riscaldamento + allunghi",
         "4 x 1600 m @ "+P_I+" /km, recupero 3'30\" corsa lenta",
         "2 km defaticamento"
       ]},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo."]},
-      sat:{type:'facile', km:6, dur:"38'", title:"Facile 6 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
+      wed:{type:'facile', km:7, dur:"44'", title:"Facile 7 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
+      thu:{type:'ritmo', km:12, dur:"~1h10", title:"Soglia: 2 x 4 km @ T + Palestra B leggera", tag:"Qualità", targetHr:HR_T, detail:[
+        "Pranzo — 3 km riscaldamento @ "+P_E,
+        "Pranzo — 2 x 4 km @ "+P_T+" /km, recupero 3' corsa lenta",
+        "Pranzo — 1 km defaticamento",
+        "8 km totali a soglia: la seduta più dura del blocco"
+      ].concat(gym("B","Leggera: domenica c'è il lungo da 21 km"))},
+      fri:rest(),
+      sat:{type:'facile', km:5, dur:"32'", title:"Facile 5 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
       sun:{type:'lungo', km:21, dur:"~2h12", title:"Lungo 21 km con 8 @ ritmo gara", tag:"Chiave", targetHr:HR_E, detail:[
         "Primi 13 km @ "+P_E,
         "Ultimi 8 km @ "+RP+" /km",
-        "Praticamente la distanza di gara, a due settimane dal via: dopo questo Verona non ti spaventa più",
+        "Praticamente la distanza di gara, a due settimane dal via",
         "Seconda e ultima prova generale di alimentazione"
       ]}
   }},
   // ---------- SETTIMANA 8: taper + gara ----------
-  { phase:"Taper e gara", note:"Volume giù del 40-50%, intensità mantenuta ma in dosi piccole. È la settimana in cui il lavoro delle 7 precedenti si trasforma in forma. Non aggiungere niente.", days:{
-      mon:{type:'recupero', km:5, dur:"32'", title:"Recupero 5 km", targetPace:P_REC, targetHr:HR_REC, detail:recDet()},
-      tue:{type:'ritmo', km:8, dur:"~48'", title:"Soglia breve: 3 km @ T", tag:"Qualità leggera", targetHr:HR_T, detail:[
+  { phase:"Taper e gara", note:"Volume giù del 40-50%, intensità mantenuta in dosi piccole. Niente padel, niente palestra gambe. Non aggiungere niente.", days:{
+      mon:{type:'recupero', km:5, dur:"32'", title:"Recupero 5 km + core", targetPace:P_REC, targetHr:HR_REC, detail:recDet(["Palestra: solo core e mobilità. Niente gambe con carico questa settimana"])},
+      tue:{type:'ritmo', km:8, dur:"~48'", title:"Soglia breve: 3 km @ T", tag:"Niente padel", targetHr:HR_T, detail:[
         "2 km riscaldamento",
-        "3 km @ "+P_T+" /km — deve sembrarti facile, se fai fatica non forzare",
-        "2 km defaticamento"
+        "3 km @ "+P_T+" /km — deve sembrarti facile",
+        "2 km defaticamento",
+        "Niente padel: una storta a cinque giorni da Verona butta via otto settimane"
       ]},
       wed:{type:'facile', km:6, dur:"38'", title:"Facile 6 km", targetPace:P_E, targetHr:HR_E, detail:eDet()},
-      thu:{type:'facile', km:5, dur:"32'", title:"Facile 5 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["4 x 100 m a ritmo gara, non oltre"])},
-      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo.","Ritiro pettorale se possibile oggi, per non pensarci sabato.","Carboidrati un po' più abbondanti del solito, niente cibi nuovi."]},
-      sat:{type:'recupero', km:3, dur:"20'", title:"Sgambata 3 km", targetPace:P_REC, targetHr:HR_REC, detail:["3 km lentissimi + 3 allunghi brevi","Serve solo a sciogliere le gambe","Cena: carboidrati familiari, niente esperimenti. Borsa gara pronta stasera."]},
+      thu:{type:'facile', km:5, dur:"32'", title:"Facile 5 km + allunghi", targetPace:P_E, targetHr:HR_E, detail:eDet(["4 x 100 m a ritmo gara, non oltre","Niente palestra"])},
+      fri:{type:'riposo', km:0, title:"Riposo", detail:["Riposo completo.","Ritiro pettorale se possibile oggi.","Carboidrati un po' più abbondanti, niente cibi nuovi."]},
+      sat:{type:'recupero', km:3, dur:"20'", title:"Sgambata 3 km", targetPace:P_REC, targetHr:HR_REC, detail:["3 km lentissimi + 3 allunghi brevi","Cena: carboidrati familiari. Borsa gara pronta stasera."]},
       sun:{type:'gara', km:21.1, dur:"21,097 km", title:"🏁 GARA — Verona Run Marathon (21K)", tag:"Gara", targetPace:RP, detail:[
-        "25ª Eurospin Verona Run Marathon — percorso piatto e veloce nel centro di Verona",
+        "Percorso piatto e veloce nel centro di Verona",
         "Colazione 2h30-3h prima: carboidrati semplici e familiari",
         "Gel: primo al km 8-10, poi ogni 6-8 km, sempre con acqua",
-        "Pacing: primi 3 km leggermente sotto il ritmo obiettivo, poi costante, ultimi 5 km quello che resta",
-        "Ricorda la M6C: il calo arriva tra il km 9 e il 12. Sapere che arriva è metà del lavoro per gestirlo",
-        "Obiettivo: da definire col tune-up del 25/10 — realisticamente 1h44-1h48, con 1h40 come stretch se il tune-up va molto bene"
+        "Primi 3 km leggermente sotto il ritmo obiettivo, poi costante, ultimi 5 km quello che resta",
+        "Ricorda la M6C: il calo arriva tra il km 9 e il 12. Sapere che arriva è metà del lavoro",
+        "Obiettivo: da definire col tune-up — realisticamente 1h44-1h48"
       ]}
   }}
   ];
@@ -619,7 +619,11 @@
      così non sovrascrivono mai quello che hai inserito tu. */
   const SEED={
     '2026-09-23':{done:true,km:5,pace:'6:14',hr:135,
-      note:'Recupero spostato da martedì (martedì 1h30 di padel). 35 m di dislivello, Valdagno.'}
+      note:'Recupero spostato da martedì (martedì 1h30 di padel). 35 m di dislivello.'},
+    '2026-09-24':{done:true,km:6.01,pace:'5:35',hr:146,note:'Pranzo, 51 m di dislivello.'},
+    '2026-09-26':{done:true,km:7,pace:'5:08',hr:158,
+      note:'Metronomo a 161 spm: più veloce del previsto, cadenza e ritmo saliti insieme.'},
+    '2026-09-27':{done:true,km:8,pace:'5:34',hr:153,note:'Ultimo della settimana di recupero. 60 m di dislivello.'}
   };
 
   async function load(){
@@ -878,7 +882,7 @@
 
     /* 1. ritmo + FC nel tempo */
     const withPace=logged.filter(k=>p2s(log[k].pace)!=null);
-    const withHr=logged.filter(k=>log[k].hr!=null&&!isNaN(log[k].hr));
+    const withHr=logged.filter(k=>log[k].hr!=null&&!isNaN(log[k].hr)&&p2s(log[k].pace)!=null);
     if(withPace.length>=2||withHr.length>=2){
       const idx={}; logged.forEach((k,i)=>idx[k]=i);
       const n=logged.length;
