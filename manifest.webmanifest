@@ -1,0 +1,32 @@
+{
+  "name": "Lisbona 21K — Piano di allenamento",
+  "short_name": "Lisbona 21K",
+  "description": "Piano di allenamento a test verso la EDP Lisbon Half Marathon del 7 marzo 2027.",
+  "lang": "it",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1218",
+  "theme_color": "#0E1218",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
