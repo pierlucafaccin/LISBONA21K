@@ -1,6 +1,6 @@
 /* Service worker — Verona 21K
    Alza CACHE_VERSION a ogni deploy che cambia icone o manifest. */
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = 'verona21k-' + CACHE_VERSION;
 
 const ASSETS = [
