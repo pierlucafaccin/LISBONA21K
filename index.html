@@ -226,6 +226,18 @@
   .res{margin-top:12px;font-size:13.5px;line-height:1.5;color:#C8D1DC;background:var(--raised);
        border-radius:var(--r-sm);padding:11px 12px;border-left:3px solid #E5CF4A;}
   .res b{color:var(--text);}
+  details.tm{margin-top:14px;background:var(--raised);border-radius:var(--r-sm);}
+  details.tm summary{list-style:none;cursor:pointer;padding:12px 13px;font-size:14px;font-weight:600;
+    display:flex;align-items:center;justify-content:space-between;}
+  details.tm summary::-webkit-details-marker{display:none;}
+  details.tm summary::after{content:"+";font-size:18px;color:var(--dim);font-weight:400;}
+  details.tm[open] summary::after{content:"–";}
+  details.tm .in{padding:0 13px 13px;}
+  .speeds{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 11px;}
+  .speeds span{font-size:12px;padding:5px 9px;border-radius:7px;background:var(--surface);}
+  .speeds b{font-weight:700;}
+  .tmnote{font-size:12.5px;color:var(--dim);line-height:1.5;margin:10px 0 0;}
+  .done.tmchk{margin-top:10px;}
   .state{padding:18px 16px;}
   .state .sk{font-size:12px;color:var(--dim);margin:0 0 4px;}
   .state .big{font-size:42px;font-weight:700;line-height:1;letter-spacing:-.03em;}
@@ -375,7 +387,8 @@
     test:    {lbl:'Test',    c:'#E5CF4A'},
     gara:    {lbl:'Gara',    c:'var(--z-race)'},
     riposo:  {lbl:'Riposo',  c:'var(--z-rest)'},
-    padel:   {lbl:'Padel',   c:'#9A82D4'}
+    padel:   {lbl:'Padel',   c:'#9A82D4'},
+    palestra:{lbl:'Palestra',c:'#7D8BA0'}
   };
 
   /* ═══════════ fisiologia: formule di Daniels–Gilbert ═══════════
@@ -464,9 +477,13 @@
   const PADEL=(alt)=>({type:'padel',km:0,title:'Padel libero',tag:'Padel libero',
     detail:['Padel: è un giorno duro, non di recupero','Scarpe da padel, non da corsa: la suola da running non tiene i movimenti laterali','Se non giochi: '+alt]});
   const NOPADEL=e=>Object.assign(e,{tag:'Niente padel'});
+  const GYM_DESC={A:'parte alta, spinta e tirata',B:'gambe: lavoro su una gamba, polpacci, anche',C:'spalle, braccia, core'};
+  const TUE=(x)=>({type:'palestra',km:0,title:'Palestra C · niente corsa',
+    detail:['Palestra C: '+GYM_DESC.C,'Uno dei due giorni senza corsa della settimana',
+      'Padel fermo finché il ginocchio non è a posto. Quando riprende, va qui'].concat(x||[])});
   function GYM(e,w,note){
     return Object.assign({},e,{title:e.title+' + Palestra '+w,gym:w,
-      detail:e.detail.concat(['Dopo la corsa: Palestra '+w+' (scheda del PT)'+(note?' — '+note:'')])});
+      detail:e.detail.concat(['Dopo la corsa: Palestra '+w+' ('+GYM_DESC[w]+')'+(note?' — '+note:'')])});
   }
 
   /* test */
@@ -477,7 +494,8 @@
   const TT=(k)=>({type:'test',test:k===5?'tt5k':'tt10k',km:k===5?10:15,title:'Test: '+k+' km a tutta',tag:'Test',
     detail:['3 km riscaldamento + 4 allunghi',k+' km il più veloce possibile, ritmo regolare: partenza conservativa, ultimo km a tutta',
       '2 km defaticamento','Pista se disponibile, altrimenti il solito percorso: sempre lo stesso','Con le Cloudboom',
-      'Inserisci il tempo: l\'app ricalcola VDOT, andature e previsione per Lisbona']});
+      'Inserisci il tempo: l\'app ricalcola VDOT, andature e previsione per Lisbona'].concat(k===10?
+      ['Lap al 10\u2019 di corsa: la FC media degli ultimi 20\u2019 diventa la tua soglia, e l\'app ricalcola le zone']:[])});
   const THR30={type:'test',test:'thr30',km:11,title:'Test di soglia: 30\' a tutta',tag:'Test',
     detail:['3 km riscaldamento + allunghi','30\' al massimo sforzo che riesci a tenere COSTANTE',
       'Lap a 10\': conta la FC media degli ultimi 20\'','2 km defaticamento',
@@ -505,76 +523,83 @@
   const WK=(phase,note,d)=>({phase,note,days:d});
 
   const WEEK_TEMPLATES=[
-  /* ───────── FASE 1 · BASE ───────── */
-  WK("Base 1","Si parte. Volume moderato, quasi tutto facile. Sabato il primo test a FC fissa: è la tua fotografia di partenza.",{
+  /* ───────── storico: settimana interrotta ───────── */
+  WK("Base 1 · interrotta","Settimana interrotta: dopo la soglia di giovedì il ginocchio ha chiesto lo stop dalla corsa.",{
     mon:GYM(E(6),'A','prima seduta, leggera'),tue:PADEL(HILL),wed:E(7),
     thu:GYM(THR(8,'3 km continui',3,2),'B','leggera'),fri:REST(),sat:HRFIX,sun:LONG(13)}),
-  WK("Base 2","Il volume cresce di poco. La soglia di giovedì si allunga di un chilometro.",{
-    mon:GYM(E(7),'A'),tue:PADEL(HILL),wed:E(8),
-    thu:GYM(THR(9,'4 km continui',3,2),'B'),fri:REST(),sat:ES(6),sun:LONG(14)}),
-  WK("Base 3","Prima soglia frazionata: due blocchi allo stesso ritmo.",{
-    mon:GYM(E(7),'A'),tue:PADEL(HILL),wed:E(8),
-    thu:GYM(THR(10,'2 × 2,5 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(7),sun:LONG(16)}),
-  WK("Base · scarico + test 5 km","Settimana leggera per arrivare fresco al primo test vero. Domenica il 5 km ricalibra tutto il piano.",{
-    mon:GYM(E(6),'A','leggera'),tue:PADEL('facile 6 km'),wed:E(7),
-    thu:ES(6),fri:REST(),sat:REC(4,['3 allunghi brevi a fine corsa']),sun:TT(5)}),
-  WK("Base 4","Si riparte con le andature aggiornate dal test. Sabato secondo test a FC fissa.",{
-    mon:GYM(E(7),'A'),tue:PADEL(HILL),wed:E(8),
+  /* ───────── RIPRESA ───────── */
+  WK("Ripresa · ritorno alla corsa","Si torna a correre da giovedì. Regola del ginocchio: se camminando dà fastidio, quel giorno non si corre. Se il fastidio torna correndo, è il momento del fisioterapista.",{
+    mon:REST(['Niente corsa: ginocchio']),
+    tue:{type:'palestra',km:0,title:'Palestra: spinta, tirata, gambe',detail:['Giorno senza corsa']},
+    wed:{type:'palestra',km:0,title:'Palestra: braccia, spalle, polpacci',detail:['Giorno senza corsa']},
+    thu:Object.assign(E(5,['Prova del ginocchio: percorso piatto, con le 1080','Se dà fastidio, cammina e chiudi lì: nessun problema','Niente palestra oggi']),{title:'Facile 5 km · prova del ginocchio'}),
+    fri:REST(),sat:E(5),sun:E(8,['Niente lungo questa settimana: solo un facile un po\' più lungo'])}),
+  WK("Ripresa 2","Cinque uscite brevi, tutte facili. Sabato il primo test a FC fissa: è la fotografia di partenza dopo lo stop.",{
+    mon:GYM(E(5),'A'),tue:TUE(),wed:E(6),
+    thu:GYM(ES(6),'B','leggera, niente piegamenti profondi'),fri:REST(),sat:HRFIX,sun:LONG(10)}),
+  WK("Ripresa 3","Torna la soglia, breve. Se il ginocchio regge tutta la settimana, la ripresa è conclusa.",{
+    mon:GYM(E(6),'A'),tue:TUE(),wed:E(7),
+    thu:GYM(THR(8,'3 km continui',3,2),'B','attenzione al ginocchio'),fri:REST(),sat:ES(6),sun:LONG(12)}),
+  /* ───────── BASE ───────── */
+  WK("Base 1","Il volume cresce di poco ogni settimana. Una sola seduta di qualità, il giovedì.",{
+    mon:GYM(E(6),'A'),tue:TUE(),wed:E(7),
+    thu:GYM(THR(9,'4 km continui',3,2),'B'),fri:REST(),sat:ES(7),sun:LONG(13)}),
+  WK("Base 2","Prima soglia frazionata: due blocchi allo stesso ritmo.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
+    thu:GYM(THR(10,'2 × 2,5 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(7),sun:LONG(15)}),
+  WK("Base 3","Ultima settimana carica della base. Sabato secondo test a FC fissa.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
     thu:GYM(THR(10,'5 km continui',3,2),'B'),fri:REST(),sat:HRFIX,sun:LONG(16)}),
-  WK("Base 5","Il lungo arriva a 17 km.",{
-    mon:GYM(E(8),'A'),tue:PADEL(HILL),wed:E(9),
-    thu:GYM(THR(11,'2 × 3 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(8),sun:LONG(17)}),
-  WK("Base 6","Ultima settimana carica della base. Primi chilometri a ritmo maratona nel lungo.",{
-    mon:GYM(E(8),'A'),tue:PADEL('facile 8 km con 6 × 2\' svelto / 2\' facile'),wed:E(10),
-    thu:GYM(THR(11,'6 km continui',3,2),'B'),fri:REST(),sat:ES(8),sun:LONG(18,3,'M')}),
-  WK("Base · scarico + test soglia","Scarico e test di soglia: la FC media degli ultimi 20' diventa la base di tutte le zone.",{
-    mon:GYM(E(7),'A','leggera'),tue:PADEL('facile 6 km'),wed:E(8),
-    thu:ES(6),fri:REST(),sat:REC(5,['3 allunghi brevi a fine corsa']),sun:THR30}),
-  /* ───────── FASE 2 · QUALITÀ ───────── */
-  WK("Qualità 1 · test VAM","Inizia il lavoro sul VO2max. Martedì il test VAM, niente padel: serve a tarare le ripetute.",{
-    mon:GYM(E(7),'A'),tue:NOPADEL(Object.assign({},VAM7)),wed:E(7),
-    thu:GYM(THR(11,'2 × 3 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:HRFIX,sun:LONG(17)}),
-  WK("Qualità 2","Prime vere ripetute VO2max.",{
-    mon:GYM(E(8),'A'),tue:NOPADEL(INT(10,'5 × 1000 m, recupero 3\' corsa lenta',3,2)),wed:E(8),
-    thu:GYM(THR(10,'5 km continui',3,2),'B'),fri:REST(),sat:ES(7),sun:LONG(19,4,'M')}),
-  WK("Qualità · test 10 km","Domenica il 10 km a tutta: il dato più affidabile prima di Natale. Giovedì leggero per arrivarci fresco.",{
-    mon:GYM(E(8),'A'),tue:PADEL('6 × 800 m @ {I} /km, recupero 2\'30", con 3 km di riscaldamento e 2 di defaticamento'),wed:E(8),
-    thu:ES(7),fri:REST(),sat:REC(4,['3 allunghi brevi a fine corsa']),sun:TT(10)}),
-  WK("Qualità · Natale, scarico","Natale cade di venerdì, che è già riposo. Settimana più leggera: goditi le feste senza perdere il filo.",{
-    mon:GYM(E(7),'A','leggera'),tue:PADEL('facile 7 km'),wed:E(8),
-    thu:GYM(THR(9,'4 km continui',3,2),'B','leggera'),fri:REST(['Buon Natale.']),sat:ES(6),sun:LONG(15)}),
-  WK("Qualità 3","Si riprende forte. Capodanno è venerdì: riposo. Sabato test a FC fissa.",{
-    mon:GYM(E(7),'A'),tue:NOPADEL(INT(11,'6 × 1000 m, recupero 3\' corsa lenta',3,2)),wed:E(7),
-    thu:GYM(THR(11,'6 km continui',3,2),'B'),fri:REST(['Buon anno.']),sat:HRFIX,sun:LONG(19,4,'M')}),
-  WK("Qualità 4","La settimana più dura della fase 2.",{
-    mon:GYM(E(7),'A'),tue:NOPADEL(INT(11,'5 × 1200 m, recupero 3\' corsa lenta',3,2)),wed:E(8),
-    thu:GYM(THR(12,'2 × 4 km, recupero 3\' corsa lenta',2,2),'B'),fri:REST(),sat:ES(6),sun:LONG(20,5,'M')}),
-  /* ───────── FASE 3 · SPECIFICA ───────── */
-  WK("Specifica 1","Da qui il lavoro diventa specifico per la mezza: compaiono i chilometri a ritmo gara nel lungo.",{
-    mon:GYM(E(8),'A'),tue:NOPADEL(INT(11,'4 × 1600 m, recupero 3\'30" corsa lenta',3,2)),wed:E(8),
-    thu:GYM(THR(14,'3 × 3 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(6),sun:LONG(18,6,'RP')}),
-  WK("Specifica · scarico + test VAM e 5 km","Settimana di verifica: VAM martedì, 5 km domenica. Confrontali con ottobre e dicembre.",{
-    mon:GYM(E(7),'A','leggera'),tue:NOPADEL(Object.assign({},VAM7)),wed:E(7),
+  WK("Base · scarico + test 5 km","Settimana leggera per arrivare fresco al primo test vero. Domenica il 5 km ricalibra tutto il piano.",{
+    mon:GYM(E(6),'A','leggera'),tue:TUE(),wed:E(7),
+    thu:ES(6),fri:REST(),sat:REC(4,['3 allunghi brevi a fine corsa']),sun:TT(5)}),
+  /* ───────── QUALITÀ ───────── */
+  WK("Qualità 1","Si riparte con le andature aggiornate dal 5 km.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
+    thu:GYM(THR(11,'2 × 3 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(7),sun:LONG(17)}),
+  WK("Qualità 2 · test VAM","Giovedì il test VAM al posto della qualità: serve a tarare le ripetute. Sabato test a FC fissa.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
+    thu:VAM7,fri:REST(),sat:HRFIX,sun:LONG(18,3,'M')}),
+  WK("Qualità · test 10 km","Domenica il 10 km a tutta: tempo e FC degli ultimi 20' ricalibrano andature e zone.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
+    thu:ES(6),fri:REST(),sat:REC(4,['3 allunghi brevi a fine corsa']),sun:TT(10)}),
+  WK("Natale · scarico","Natale cade di venerdì, che è già riposo. Settimana più leggera: goditi le feste senza perdere il filo.",{
+    mon:GYM(E(6),'A','leggera'),tue:TUE(),wed:E(7),
+    thu:GYM(THR(9,'4 km continui',3,2),'B','leggera'),fri:REST(['Buon Natale.']),sat:ES(6),sun:LONG(14)}),
+  WK("Qualità 3","Prime ripetute VO2max. Capodanno è venerdì: riposo.",{
+    mon:GYM(E(7),'A'),tue:TUE(),wed:E(8),
+    thu:GYM(INT(10,'5 × 1000 m, recupero 3\' corsa lenta',3,2),'B'),fri:REST(['Buon anno.']),sat:ES(7),sun:LONG(18,4,'M')}),
+  WK("Qualità 4","La settimana più dura della fase.",{
+    mon:GYM(E(8),'A'),tue:TUE(),wed:E(8),
+    thu:GYM(THR(12,'2 × 4 km, recupero 3\' corsa lenta',2,2),'B'),fri:REST(),sat:ES(7),sun:LONG(19,5,'M')}),
+  /* ───────── SPECIFICA ───────── */
+  WK("Specifica 1","Da qui il lavoro diventa specifico per la mezza: i primi chilometri a ritmo gara nel lungo.",{
+    mon:GYM(E(8),'A'),tue:TUE(),wed:E(9),
+    thu:GYM(INT(11,'4 × 1600 m, recupero 3\'30" corsa lenta',3,2),'B'),fri:REST(),sat:HRFIX,sun:LONG(18,6,'RP')}),
+  WK("Specifica · scarico + VAM e 5 km","Settimana di verifica: VAM mercoledì, 5 km domenica. Confrontali con novembre e dicembre.",{
+    mon:GYM(E(7),'A','leggera'),tue:TUE(),wed:VAM7,
     thu:ES(6),fri:REST(),sat:REC(4,['3 allunghi brevi a fine corsa']),sun:TT(5)}),
   WK("Specifica 2 · deriva cardiaca","Domenica il lungo da 22 km diventa un test: quanto sale il battito a ritmo costante.",{
-    mon:GYM(E(7),'A'),tue:NOPADEL(INT(10,'5 × 1000 m, recupero 3\' corsa lenta',3,2)),wed:E(7),
-    thu:GYM(THR(12,'2 × 4 km, recupero 3\' corsa lenta',2,2),'B'),fri:REST(),sat:HRFIX,sun:DRIFT}),
-  WK("Specifica · test 10 km","L'ultimo 10 km a tutta, a quattro settimane da Lisbona. Da questo tempo esce il ritmo gara definitivo.",{
-    mon:GYM(E(8),'A'),tue:PADEL('6 × 1000 m @ {I} /km, recupero 3\', con 3 km di riscaldamento e 2 di defaticamento'),wed:E(9),
-    thu:ES(7),fri:REST(),sat:REC(5,['3 allunghi brevi a fine corsa']),sun:TT(10)}),
-  WK("Specifica · picco","La settimana più carica di tutto il blocco: 70 km e il lungo da 22 con 8 a ritmo gara. Dopo questa, si scarica.",{
-    mon:GYM(E(8),'A','ultima seduta con carichi pieni'),tue:NOPADEL(INT(11,'5 × 1200 m, recupero 3\' corsa lenta',3,2)),wed:E(9),
-    thu:GYM(THR(14,'2 × 5 km, recupero 3\' corsa lenta',2,2),'B','leggera'),fri:REST(),sat:ES(6),sun:LONG(22,8,'RP')}),
-  WK("Specifica · prova generale","Domenica 12 km a ritmo gara: se li reggi, il tempo di Lisbona è credibile. Niente padel da qui alla gara.",{
-    mon:GYM(E(8),'A','leggera'),tue:NOPADEL(INT(9,'4 × 1000 m, recupero 3\' corsa lenta',3,2)),wed:E(8),
-    thu:THR(9,'4 km continui',3,2),fri:REST(),sat:REC(5,['3 allunghi brevi a fine corsa']),sun:REHEARSAL}),
-  /* ───────── FASE 4 · TAPER ───────── */
-  WK("Taper","Il volume scende, l'intensità resta in piccole dosi. Sabato l'ultimo test a FC fissa: confrontalo con quello del 10 ottobre.",{
-    mon:GYM(E(6),'A','leggera, metà carichi'),tue:NOPADEL(INT(9,'5 × 800 m, recupero 2\'30" corsa lenta',3,2)),wed:E(6),
-    thu:RPS(8,'4 km',2,2),fri:REST(),sat:HRFIX,sun:LONG(12)}),
+    mon:GYM(E(8),'A'),tue:TUE(),wed:E(9),
+    thu:GYM(THR(14,'3 × 3 km, recupero 2\' corsa lenta',3,2),'B'),fri:REST(),sat:ES(7),sun:DRIFT}),
+  WK("Specifica · test 10 km","L'ultimo 10 km a tutta, a quattro settimane da Lisbona. Da qui esce il ritmo gara definitivo.",{
+    mon:GYM(E(8),'A'),tue:TUE(),wed:E(9),
+    thu:ES(6),fri:REST(),sat:REC(5,['3 allunghi brevi a fine corsa']),sun:TT(10)}),
+  WK("Specifica · picco","La settimana più carica del blocco: il lungo da 22 con 8 a ritmo gara. Dopo questa, si scarica.",{
+    mon:GYM(E(8),'A','ultima seduta con carichi pieni'),tue:TUE(),wed:E(10),
+    thu:GYM(THR(14,'2 × 5 km, recupero 3\' corsa lenta',2,2),'B','leggera'),fri:REST(),sat:HRFIX,sun:LONG(22,8,'RP')}),
+  WK("Specifica · prova generale","Domenica 12 km a ritmo gara: se li reggi, il tempo di Lisbona è credibile.",{
+    mon:GYM(E(8),'A','leggera'),tue:TUE(['Niente gambe questa settimana']),wed:E(8),
+    thu:INT(9,'4 × 1000 m, recupero 3\' corsa lenta',3,2),fri:REST(),sat:REC(5,['3 allunghi brevi a fine corsa']),sun:REHEARSAL}),
+  /* ───────── TAPER ───────── */
+  WK("Taper","Il volume scende, l'intensità resta in piccole dosi.",{
+    mon:GYM(E(6),'A','leggera, metà carichi'),tue:TUE(['Solo core e mobilità']),wed:E(7),
+    thu:RPS(8,'4 km',2,2),fri:REST(),sat:ES(6),sun:LONG(12)}),
   WK("Settimana di gara","Non aggiungere niente. Il lavoro è fatto.",{
-    mon:REC(5,['Palestra: solo core e mobilità, niente gambe']),tue:NOPADEL(THR(7,'3 km continui',2,2)),wed:E(6),
-    thu:E(5,['A fine corsa 4 × 100 m a ritmo gara, non oltre']),fri:REST(['Ritiro pettorale all\'expo (4-6 marzo)','Carboidrati un po\' più abbondanti, niente cibi nuovi']),
+    mon:REC(5,['Palestra: solo core e mobilità, niente gambe']),tue:REST(['Niente palestra']),
+    wed:THR(7,'3 km continui',2,2),
+    thu:E(5,['A fine corsa 4 × 100 m a ritmo gara, non oltre']),
+    fri:REST(['Ritiro pettorale all\'expo (4-6 marzo)','Carboidrati un po\' più abbondanti, niente cibi nuovi']),
     sat:REC(3,['3 allunghi brevi','Borsa gara pronta stasera']),sun:RACE})
   ];
 
@@ -607,7 +632,7 @@
         const s=tSec(d.ttime);
         if(s){st.vd=vdotFrom(t==='tt5k'?5000:10000,s);st.vdSrc=(t==='tt5k'?'5 km':'10 km')+' del '+when+' ('+normTime(d.ttime)+')';}
       }
-      if(t==='thr30'&&d.thr){st.lthr=+d.thr;st.lthrSrc='test del '+when;}
+      if((t==='thr30'||t==='tt10k')&&d.thr){st.lthr=+d.thr;st.lthrSrc='test del '+when;}
       if(t==='vam7'&&d.tdist){st.vam=d.tdist/420*3.6;st.vamSrc='test del '+when;}
       if(t==='hrfix'&&p2s(d.pace)!=null)st.hrfix.push({k,s:p2s(d.pace)});
       if(t==='drift'&&d.h1&&d.h2)st.drift={pct:(d.h2-d.h1)/d.h1*100,when};
@@ -619,6 +644,44 @@
     Z=zonesFor(ST.vd, ST.lthr||Math.round(HR_MAX*0.9));
   }
   const R=s=>String(s).replace(/\{(\w+)\}/g,(m,k)=>Z[k]!=null?Z[k]:m);
+
+  /* ═══════════ tapis: le andature diventano velocità in km/h ═══════════ */
+  const PACE_KEYS=['REC','E','M','T','I','R','RP'];
+  const ZNAME={REC:'Recupero',E:'Facile',M:'Ritmo maratona',T:'Soglia',I:'VO2max',R:'Veloce',RP:'Ritmo gara'};
+  const kmh=v=>v.toFixed(1).replace('.',',');
+  function speedRange(paceStr){
+    const q=rng(paceStr); if(!q)return paceStr;
+    return kmh(3600/q[1])+'–'+kmh(3600/q[0])+' km/h';
+  }
+  // come R(), ma i ritmi diventano velocità ("@ {T} /km" -> "@ 11,6–11,8 km/h")
+  const RT=s=>String(s).replace(/\{(\w+)\}( ?\/km)?/g,(m,k,suf)=>{
+    if(PACE_KEYS.includes(k))return speedRange(Z[k]);
+    return Z[k]!=null?Z[k]+(suf||''):m;
+  }).replace(/^Ritmo /,'Velocità ');
+  const RUN_TYPES=['facile','recupero','lungo','ritmo','ripetute'];
+  function tmHtml(e){
+    if(e.type==='test'&&e.test==='hrfix')return '';            // è già un test sul tapis
+    if(e.test&&e.test!=='hrfix'){
+      return '<details class="tm"><summary>Se piove: versione tapis</summary><div class="in">'+
+        '<p class="tmnote" style="margin-top:0">I test non si fanno sul tapis: il risultato non sarebbe confrontabile con quelli all\u2019aperto. '+
+        'Meglio spostarlo di un giorno o due e fare oggi la seduta che c\u2019era al suo posto.</p></div></details>';
+    }
+    if(!RUN_TYPES.includes(e.type))return '';
+    const txt=[e.title].concat(e.detail).join(' ');
+    const used=PACE_KEYS.filter(k=>txt.indexOf('{'+k+'}')>=0);
+    if((e.type==='ripetute'||e.type==='ritmo')&&!used.includes('E'))used.unshift('E');   // riscaldamento
+    let h='<details class="tm"><summary>Se piove: versione tapis</summary><div class="in">';
+    h+='<div class="speeds">'+used.map(k=>'<span>'+ZNAME[k]+' <b class="num">'+speedRange(Z[k])+'</b></span>').join('')+'</div>';
+    h+='<ul class="steps">'+e.detail.map(x=>'<li>'+RT(x)+'</li>').join('')+'</ul>';
+    const notes=['Pendenza 1%: compensa l\u2019assenza di vento e rende lo sforzo simile alla strada.',
+      'In palestra fa caldo e il battito sale: la FC resta l\u2019arbitro. Se sei sopra la fascia, scala di 0,2–0,3 km/h.'];
+    if(e.type==='ripetute')notes.push('Recuperi: scendi a '+speedRange(Z.REC)+' o cammina. Il nastro impiega qualche secondo a cambiare velocità: fai partire il tempo della ripetuta quando è a regime.');
+    if(e.type==='ritmo'||e.type==='ripetute')notes.push('Riscaldamento e defaticamento alla velocità del facile.');
+    if(e.type==='lungo')notes.push('Un lungo sul tapis pesa di testa: una pausa d\u2019acqua di 2-3 minuti a metà va benissimo.');
+    notes.push('Ogni tapis è tarato un po\u2019 diverso: quando puoi, usa sempre lo stesso.');
+    h+=notes.map(n=>'<p class="tmnote">'+n+'</p>').join('');
+    return h+'</div></details>';
+  }
 
   function rng(str){
     if(!str)return null;
@@ -650,6 +713,16 @@
   const hasData=d=>d&&(d.km!=null||d.pace||d.hr!=null||d.ttime||d.tdist||d.thr||d.h1);
 
   /* ═══════════ storage ═══════════ */
+  const SEED={
+    '2026-10-05':{done:false,note:'Riposo al posto del facile e della palestra.'},
+    '2026-10-06':{done:true,km:null,hr:139,note:'Padel 1h29, FC max 168, 998 kcal, Relative Effort 52.'},
+    '2026-10-07':{done:true,km:7,pace:'5:44',hr:140,tm:true,note:'Tapis, New Balance 1080. Cadenza 152 spm.'},
+    '2026-10-08':{done:true,km:7,pace:'5:06',hr:164,note:'Parte a soglia: 3 km a 5:04-5:10, FC 157-169. Uscita intera 5:32 e 148 bpm. On Cloudboom Max.'},
+    '2026-10-10':{done:false,note:'Saltato: ginocchio.'},
+    '2026-10-11':{done:false,note:'Al posto del lungo: 40\' di bici, FC media 143, max 173.'},
+    '2026-10-13':{done:true,note:'Spinta, tirata, gambe.'},
+    '2026-10-14':{done:true,note:'Bicipiti, tricipiti, spalle, richiamo polpacci.'}
+  };
   async function load(){
     try{const r=await window.storage.get('training-log',false);if(r&&r.value)log=JSON.parse(r.value);}
     catch(e){log={};}
@@ -658,6 +731,7 @@
       const e=log[k];
       if(e&&e.pace){const n=normPace(e.pace);if(n&&n!==e.pace){e.pace=n;changed=true;}}
     });
+    Object.keys(SEED).forEach(k=>{if(!log[k]){log[k]=SEED[k];changed=true;}});
     if(changed)await save();
   }
   async function save(){
@@ -700,6 +774,7 @@
       t='VAM <b>'+vam.toFixed(1)+' km/h</b> ('+fmtPace(3600/vam)+'/km) · la mezza prevista è al <b>'+idx.toFixed(0)+'%</b> della VAM';
     }
     if(e.test==='thr30'&&d.thr) t='Soglia a <b>'+d.thr+' bpm</b>. Tutte le zone di FC sono ricalcolate su questo valore.';
+    if(e.test==='tt10k'&&d.thr) t+=(t?'<br>':'')+'Soglia FC a <b>'+d.thr+' bpm</b>: zone ricalcolate.';
     if(e.test==='drift'&&d.h1&&d.h2){
       const p=(d.h2-d.h1)/d.h1*100;
       t='Deriva <b>'+p.toFixed(1)+'%</b>: '+(p<5?'base aerobica solida.':'la tenuta aerobica ha ancora margine.');
@@ -734,6 +809,7 @@
     h+='<h2>'+R(e.title)+'</h2>';
     if(e.km)h+='<div class="figs"><div class="fig"><span class="v num">'+e.km+'</span><span class="l">km previsti</span></div></div>';
     h+='<ul class="steps">'+e.detail.map(x=>'<li>'+R(x)+'</li>').join('')+'</ul>';
+    h+=tmHtml(e);
 
     h+='<div class="log"><h3>Com\u2019è andata</h3>';
     if(e.type==='ritmo'||e.type==='ripetute')
@@ -744,7 +820,8 @@
     // campi specifici del test
     let x='';
     if(e.test==='tt5k'||e.test==='tt10k')
-      x='<div class="f wide"><label for="xTime">tempo dei '+(e.test==='tt5k'?'5':'10')+' km</label><input id="xTime" type="text" inputmode="numeric" placeholder="'+(e.test==='tt5k'?'22:30':'47:30')+'" value="'+(d.ttime||'')+'"></div>';
+      x='<div class="f wide"><label for="xTime">tempo dei '+(e.test==='tt5k'?'5':'10')+' km</label><input id="xTime" type="text" inputmode="numeric" placeholder="'+(e.test==='tt5k'?'22:30':'47:30')+'" value="'+(d.ttime||'')+'"></div>'+
+        (e.test==='tt10k'?'<div class="f wide"><label for="xThr">FC media degli ultimi 20\' (facoltativo, ricalcola le zone)</label><input id="xThr" type="text" inputmode="numeric" placeholder="172" value="'+(d.thr||'')+'"></div>':'');
     if(e.test==='vam7')
       x='<div class="f wide"><label for="xDist">metri percorsi in 7\'</label><input id="xDist" type="text" inputmode="numeric" placeholder="1500" value="'+(d.tdist||'')+'"></div>';
     if(e.test==='thr30')
@@ -764,6 +841,8 @@
     const fl=flags(e,hasData(d)?d:null);
     if(fl.length)h+='<div class="flags">'+fl.map(f=>'<span class="flag '+f[0]+'">'+f[1]+'</span>').join('')+'</div>';
     h+=testResult(e,d);
+    if(RUN_TYPES.includes(e.type))
+      h+='<label class="done tmchk"><input type="checkbox" id="cTm" '+(d.tm?'checked':'')+'> Fatta sul tapis</label>';
     h+='<label class="done"><input type="checkbox" id="cDone" '+(did(k)?'checked':'')+'> Seduta completata</label>';
     h+='</div></div></div>';
     h+=ladderHtml(e.type);
@@ -785,6 +864,8 @@
       const raw=$('iPace').value.trim(), pc=normPace(raw);
       if(raw&&!pc){msg.textContent='Ritmo non valido: scrivi minuti e secondi, per esempio 535 per 5:35.';ip.focus();return;}
       const f={km:isNaN(km)?null:km,pace:pc||null,hr:isNaN(hr)?null:hr,note:$('iNote').value.trim()||null};
+      if($('cTm'))f.tm=$('cTm').checked;
+      if(e.type==='padel')f.km=null;   // il GPS sul campo da padel non è affidabile
       if($('xTime')){const r=$('xTime').value.trim(),n=normTime(r);
         if(r&&!n){msg.textContent='Tempo non valido: per esempio 2230 per 22:30, oppure 14512 per 1:45:12.';return;}
         f.ttime=n;}
@@ -834,6 +915,7 @@
         if(d.km!=null)r.push(d.km+' km');
         if(d.pace)r.push(d.pace+'/km');
         if(d.hr!=null)r.push(d.hr+' bpm');
+        if(d.tm)r.push('tapis');
         sub=r.join(' · ');
       }
       const fl=flags(e,hasData(d)?d:null);
@@ -842,7 +924,7 @@
         '<span class="tick" style="background:'+t.c+'"></span>'+
         '<span><span class="t">'+R(e.title)+'</span><span class="s num">'+sub+'</span></span>'+
         '<span class="chk">✓</span></button>'+
-        '<div class="panel"><ul class="steps">'+e.detail.map(x=>'<li>'+R(x)+'</li>').join('')+'</ul>'+
+        '<div class="panel"><ul class="steps">'+e.detail.map(x=>'<li>'+R(x)+'</li>').join('')+'</ul>'+tmHtml(e)+
         (fl.length?'<div class="flags">'+fl.map(f=>'<span class="flag '+f[0]+'">'+f[1]+'</span>').join('')+'</div>':'')+
         testResult(e,d)+'</div></div>';
     }).join('');
@@ -908,10 +990,11 @@
     h+='</div>';
 
     const idx=ST.vam?(RACE_M/Z.hm*3.6)/ST.vam*100:null;
+    const nextVam=ALL.find(k=>k>=todayK&&MAP[k].entry.test==='vam7');
     h+='<div class="tiles">'+
       '<div class="tile"><div class="v num">'+ST.vd.toFixed(1)+'</div><div class="l">VDOT</div></div>'+
       '<div class="tile"><div class="v num">'+Z.lthr+'</div><div class="l">soglia FC '+(ST.lthr?'(misurata)':'(stimata)')+'</div></div>'+
-      '<div class="tile"><div class="v num">'+(ST.vam?ST.vam.toFixed(1):'—')+'</div><div class="l">VAM km/h'+(ST.vam?'':' · test il 1 dic')+'</div></div>'+
+      '<div class="tile"><div class="v num">'+(ST.vam?ST.vam.toFixed(1):'—')+'</div><div class="l">VAM km/h'+(ST.vam?'':(nextVam?' · test il '+fmt(MAP[nextVam].date):''))+'</div></div>'+
       '<div class="tile"><div class="v num">'+(idx?idx.toFixed(0)+'%':'—')+'</div><div class="l">mezza / VAM</div></div>'+
       '</div>';
     if(ST.drift)h+='<div class="note">Deriva cardiaca nel lungo del '+ST.drift.when+': <b>'+ST.drift.pct.toFixed(1)+'%</b>. '+(ST.drift.pct<5?'Base aerobica solida.':'C\'è ancora margine sulla tenuta.')+'</div>';
@@ -938,7 +1021,8 @@
     /* volume */
     const rows=WEEK_TEMPLATES.map((wt,w)=>{
       let a=0,b=0;
-      for(let i=0;i<7;i++){const k=iso(addD(MON0,w*7+i));a+=MAP[k].entry.km||0;b+=(log[k]&&log[k].km)||0;}
+      for(let i=0;i<7;i++){const k=iso(addD(MON0,w*7+i));a+=MAP[k].entry.km||0;
+        if(MAP[k].entry.type!=='padel')b+=(log[k]&&log[k].km)||0;}
       return {lbl:w%3===0?'S'+(w+1):'',a,b};
     });
     h+='<div class="card chart"><h3>Volume settimanale</h3><p>Previsto a sinistra, corso a destra. Gli avvallamenti sono scarichi e settimane di test, non cali di forma.</p>'+
@@ -957,7 +1041,7 @@
         '</div><div class="ckey">'+tk.map(t=>'<span><i style="background:'+(TYPE[t]||TYPE.riposo).c+'"></i>'+(TYPE[t]||TYPE.riposo).lbl+' '+by[t].toFixed(0)+' km</span>').join('')+'</div></div>';
     }
 
-    const realKm=ALL.reduce((s,k)=>s+((log[k]&&log[k].km)||0),0);
+    const realKm=ALL.reduce((s,k)=>s+(MAP[k].entry.type==='padel'?0:((log[k]&&log[k].km)||0)),0);
     h+='<div class="tiles">'+
       '<div class="tile"><div class="v num">'+realKm.toFixed(0)+'</div><div class="l">km corsi nel blocco</div></div>'+
       '<div class="tile"><div class="v num">'+PLAN_KM.toFixed(0)+'</div><div class="l">km previsti</div></div>'+
